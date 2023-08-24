@@ -24,13 +24,13 @@ Parameters
 ------------------
 These can be passed via cli when testing with `--paramname=XXX`.
 They are all converted to lowercase, so case insensitive.
-- `buidname=name` Name of your build. eg. `github.ref`. The action will sanitise the name (restricted to [A-Za-z0-9 -])
-- `buildfilesdirectory=/files` Path to the file-contents of your build (probably from artifact files)
-- `project=id` your UnityServices project id
-- `environment=name` 
-- `key` Your UnityServices ServiceAccount KeyID
-- `secret` The secret to go with the key.
-- `osfamily=LINUX` Os of the server (currently `WINDOWS` or `LINUX`)
+- `BuildName=name` Name of your build. eg. `github.ref`. The action will sanitise the name (restricted to [A-Za-z0-9 -])
+- `BuildFilesDirectory=/files` Path to the file-contents of your build (probably from artifact files)
+- `Project=XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX` your UnityServices project id
+- `Environment=name` 
+- `Key` Your UnityServices ServiceAccount KeyID
+- `Secret` The secret to go with the key.
+- `BuildOsFamily=LINUX` Os of the server (currently `WINDOWS` or `LINUX`)
 
 Local Testing
 -----------------

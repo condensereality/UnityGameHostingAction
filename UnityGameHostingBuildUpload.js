@@ -58,8 +58,23 @@ async function run()
 	console.log(`Fetching builds...`);
 	const Builds = await Client.GetBuildIds( Project, Environment );
 	console.log(Builds);
+
+	//	grab this later so user can see what builds exist before passing param
+	const BuildName = GetParam('BuildName');
 	
-	throw `todo: Do UnityServices stuff!`;
+	//	if no existing build, create one
+	if ( !Builds.hasOwnProperty(BuildName) )
+	{
+		const BuildOsFamily = GetParam('BuildOsFamily')
+		await Client.CreateBuild( BuildName, BuildOsFamily, Project, Environment );
+	}
+	
+	const BuildId = await Client.GetBuildId( BuildName, Project, Environment );
+	
+	const BuildFilesDirectory = GetParam('BuildFilesDirectory');
+	await Client.UploadNewBuildVersion( BuildId, BuildFilesDirectory );
+	
+	//	need to output success or anything?
 }
 
 //  if this throws, set a github action error

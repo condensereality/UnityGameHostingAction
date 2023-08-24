@@ -196,6 +196,50 @@ export class UgsClient
 
 		return BuildMap;
 	}
+	
+	async CreateBuild(BuildName,BuildOsFamily,Project,Environment)
+	{
+		if ( BuildName == "" )
+			throw `CreateBuild(${BuildName},${BuildOsFamily},${Project},${Environment}) missing build name`;
+		if ( BuildOsFamily == "" )
+			throw `CreateBuild(${BuildName},${BuildOsFamily},${Project},${Environment}) missing build os family (Expecting LINUX)`;
+		
+		const BuildType = `FILEUPLOAD`;
+		
+		//${{ env.exe }} gsh build create --name ${{ env.name }} --os-family ${{ env.osfamily }} --type ${{ env.type }} --environment-name ${{ env.environment }} --project-id ${{ env.project }}
+		const Command = `gsh build create --json --name ${BuildName} --os-family ${BuildOsFamily} --type ${BuildType} --environment-name ${Environment} --project-id ${Project}`;
+		const Output = await RunCommandLineJson( this.Exe, Command );
+		
+		let BuildMetas = Output;
+		//	output when there's one build, is just json
+		//	multiple builds gives an array
+		if ( !Array.isArray(BuildMetas) )
+			BuildMetas = [BuildMetas];
+		console.log(`builds;`,JSON.stringify(Output));
+		
+		const BuildMap = {};
+		function WriteBuildToMap(BuildMeta)
+		{
+			const Name = BuildMeta.BuildName;
+			const BuildId = BuildMeta.BuildId;
+			BuildMap[Name] = BuildId;
+		}
+		BuildMetas.forEach( WriteBuildToMap );
+
+		return BuildMap;
+	}
+	
+	
+	async GetBuildId(BuildName,Project,Environment)
+	{
+		const Builds = await this.GetBuildIds(Project,Environment);
+		
+		if ( !Builds.hasOwnProperty(BuildName) )
+			throw `No build name matching ${BuildName}; Possible build names; ${Object.keys(Builds)}`;
+		
+		return Builds[BuildName];
+	}
+	
 /*
 	const OutputMeta
 		  "${{ secrets.UnityGameServerSecret }}" | ${{ env.exe }} login --service-key-id ${{ secrets.UnityGameServerKeyId }} --secret-key-stdin
