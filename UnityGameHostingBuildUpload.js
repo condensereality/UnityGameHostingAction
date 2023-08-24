@@ -33,7 +33,7 @@ async function GetCliExe()
 	if ( FileSystem.existsSync(ExePath) )
 		return ExePath;
 	
-	throw `todo: fetch gsh exe, unzip and return`;
+	throw `CLI exe ${ExePath} doesnt exist, todo: fetch gsh exe, unzip and return`;
 }
 
 
