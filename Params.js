@@ -41,10 +41,16 @@ const Params = GetParams();
 export function GetParam(Key)
 {
 	Key = Key.toLowerCase();
-	if ( !Params.hasOwnProperty(Key) )
-		throw `Missing required parameter "${Key}"`;
 	
-	return Params[Key];
+	//	CLI args get priority
+	if ( Params.hasOwnProperty(Key) )
+		return Params[Key];
+	
+	//	now try env var
+	if ( process.env.hasOwnProperty(Key) )
+		return process.env[Key];
+	
+	throw `Missing required parameter or env var "${Key}"`;
 }
 
 export default Params;
