@@ -4,6 +4,15 @@ inputs:
     required: true
     type: string
     description: "Name of the new build. Input will be sanitised"
+  BuildFilesDirectory:
+    required: true
+    type: string
+  BuildOsFamily:
+    required: true
+    type: choice
+    options:
+     - "LINUX"
+     - "WINDOWS"
   Project:
     required: true
     type: string
@@ -27,3 +36,11 @@ secrets:
 runs:
   using: 'node19'
   main: 'UnityGameHostingBuildUpload.js'
+  env:
+   buildname: ${{ inputs.BuildName }}
+   buildfilesdirectory: ${{ inputs.BuildFilesDirectory }}
+   buildosfamily: ${{ inputs.BuildOsFamily }}
+   project: ${{ inputs.Project }}
+   environment: ${{ inputs.Environment }}
+   key: ${{ secrets.Key }}
+   secret: ${{ secrets.Secret }}
