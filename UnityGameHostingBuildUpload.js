@@ -5,8 +5,9 @@ import * as os from "os"
 import * as FileSystem from "fs"
 
 import { GetParam } from './Params.js'
-
 import { UgsClient } from './UnityGameServiceClient.js'
+
+
 
 
 const CliExeDirectory = "./CliExe";
@@ -57,7 +58,7 @@ async function run()
 
 	console.log(`Fetching builds...`);
 	const Builds = await Client.GetBuildIds( Project, Environment );
-	console.log(Builds);
+	console.log(`Found builds; `,Builds);
 
 	//	grab this later so user can see what builds exist before passing param
 	const BuildName = GetParam('BuildName');
@@ -72,7 +73,7 @@ async function run()
 	const BuildId = await Client.GetBuildId( BuildName, Project, Environment );
 	
 	const BuildFilesDirectory = GetParam('BuildFilesDirectory');
-	await Client.UploadNewBuildVersion( BuildId, BuildFilesDirectory );
+	await Client.UploadNewBuildVersion( BuildId, BuildFilesDirectory, Project, Environment );
 	
 	//	need to output success or anything?
 }

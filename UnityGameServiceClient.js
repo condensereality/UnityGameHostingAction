@@ -31,7 +31,7 @@ async function RunCommandLine(Exe,Arguments,ThrowOnNonZeroExitCode=true)
 	if ( typeof Arguments == typeof '' )
 		Arguments = Arguments.split(' ');
 	
-	console.log(`Running process [${Exe}], args=${Arguments}...`);
+	//console.log(`Running process [${Exe}], args=${Arguments}...`);
 	const Process = spawn( Exe, Arguments );
 	
 	//	promise throws or returns exit code
@@ -238,6 +238,20 @@ export class UgsClient
 			throw `No build name matching ${BuildName}; Possible build names; ${Object.keys(Builds)}`;
 		
 		return Builds[BuildName];
+	}
+	
+	async UploadNewBuildVersion(BuildId,BuildFilesDirectory,Project,Environment)
+	{
+		if ( !FileSystem.existsSync(BuildFilesDirectory) )
+			throw `BuildFilesDirectory "${BuildFilesDirectory}" doesnt exist`;
+		
+		const RemoveOldFiles = true;
+		const RemoveOldFilesParam = RemoveOldFiles ? '--remove-old-files' : '';
+		const Command = `gsh build create-version ${BuildId} --directory ${BuildFilesDirectory} --json ${RemoveOldFilesParam} --environment-name ${Environment} --project-id ${Project}`;
+
+		const Output = await RunCommandLineJson( this.Exe, Command );
+		
+		console.log(`Create-Version output;`,JSON.stringify(Output));
 	}
 	
 /*
