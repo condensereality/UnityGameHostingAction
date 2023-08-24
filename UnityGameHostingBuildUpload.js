@@ -18,6 +18,7 @@ function GetCliExeFilenameForPlatform()
 	switch ( Platform )
 	{
 		case 'darwin': return `ugs-macos-x64`;
+		case 'linux': return `ugs-linux-x64`;
 	}
 	throw `Unhandled platform ${Platform} in GetCliExeFilenameForPlatform()`;
 }
