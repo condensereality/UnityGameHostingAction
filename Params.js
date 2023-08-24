@@ -1,3 +1,7 @@
+import * as core from "@actions/core"
+
+
+
 function GetParams()
 {
 	const Params = {};
@@ -45,12 +49,17 @@ export function GetParam(Key)
 	//	CLI args get priority
 	if ( Params.hasOwnProperty(Key) )
 		return Params[Key];
+
+	//	try github inputs
+	const InputValue = core.getInput(Key);
+	if ( InputValue )
+		return InputValue;
 	
 	//	now try env var
 	if ( process.env.hasOwnProperty(Key) )
 		return process.env[Key];
 	
-	throw `Missing required parameter or env var "${Key}"`;
+	throw `Missing required parameter, github input or env var "${Key}"`;
 }
 
 export default Params;
