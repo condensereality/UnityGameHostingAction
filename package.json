@@ -1,0 +1,23 @@
+{
+  "name": "UnityGameHostingAction",
+  "type": "module",
+  "version": "0.0.1",
+  "description": "Action to using unity's GSH-CLI to deploy builds to UnityGameHosting",
+  "main": "UnityGameHosting.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/condensereality/UnityGameHostingAction.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@actions/artifact": "^0.3.2",
+    "@actions/core": "^1.10.0",
+    "@actions/github": "^4.0.0",
+    "child_process": "^1.0.2"
+  }
+}

@@ -1,0 +1,29 @@
+name: 'Unity Game Hosting'
+inputs:
+  BuildName:
+    required: true
+    type: string
+    description: "Name of the new build. Input will be sanitised"
+  Project:
+    required: true
+    type: string
+    description: "Unity Game Services Project-id, eg XXXX-XXXX-XXX-XXX"
+  Environment:
+    required: true
+    type: string
+    description: "Ugs Environment name that the build will reside in"
+    
+secrets:
+  Key:
+    required: true
+    type: string
+    description: "Service account Key-id"
+  Secret:
+    required: true
+    type: string
+    description: "Service account Key's secret"
+
+
+runs:
+  using: 'node19'
+  main: 'UnityGameHosting.js'
