@@ -26,4 +26,4 @@ secrets:
 
 runs:
   using: 'node19'
-  main: 'UnityGameHosting.js'
+  main: 'UnityGameHostingBuildUpload.js'

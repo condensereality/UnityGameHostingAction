@@ -3,7 +3,6 @@
   "type": "module",
   "version": "0.0.1",
   "description": "Action to using unity's GSH-CLI to deploy builds to UnityGameHosting",
-  "main": "UnityGameHosting.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

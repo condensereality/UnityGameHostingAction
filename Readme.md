@@ -35,6 +35,6 @@ They are all converted to lowercase, so case insensitive.
 Local Testing
 -----------------
 - `node install`
-- `node ./UnityGameHosting.js`
-- `node ./UnityGameHosting.js --buildname=MyTestBuild --buildfilesdirectory=/yourfiles --project=aaaa-bbbb-ccc-dddd --environment=env_eg_production --key=xxx --secret=fedcba9876543210`
+- `node ./UnityGameHostingBuildUpload.js`
+- `node ./UnityGameHostingBuildUpload.js --buildname=MyTestBuild --buildfilesdirectory=/yourfiles --project=aaaa-bbbb-ccc-dddd --environment=env_eg_production --key=xxx --secret=fedcba9876543210`
 
