@@ -29,7 +29,7 @@ async function RunCommandLine(Exe,Arguments,ThrowOnNonZeroExitCode=true)
 		Arguments = [];
 	//	expecting an array of args, but allow a simple string
 	if ( typeof Arguments == typeof '' )
-		Arguments = [Arguments];
+		Arguments = Arguments.split(' ');
 	
 	console.log(`Running process [${Exe}], args=${Arguments}...`);
 	const Process = spawn( Exe, Arguments );
@@ -79,13 +79,14 @@ async function RunCommandLine(Exe,Arguments,ThrowOnNonZeroExitCode=true)
 		console.warn(`Process exit code ${ExitCode}; stdout=${StdOut} stderr=${StdErr}`);
 	}
 	
+	//	turn arrays into something slightly easier to use (a string or null)
 	function GetNiceOutput(OutputData)
 	{
 		if ( OutputData.length == 0 )
 			return null;
 		if ( OutputData.length == 1 )
 			return OutputData[0];
-		return OutputData;
+		return OutputData.join(``);
 	}
 	
 	const Output = {};
@@ -103,6 +104,14 @@ async function RunCommandLineJson(Exe,Command,ThrowOnNonZeroExitCode=true)
 	const Output = await RunCommandLine(...arguments);
 	try
 	{
+		//	hacky fix for
+		//	https://github.com/Unity-Technologies/unity-gaming-services-cli/issues/2
+		if ( typeof Output.StdOut == typeof '' )
+			Output.StdOut = Output.StdOut.replaceAll(',,', ',');
+		
+		if ( typeof Output.StdErr == typeof '' )
+			Output.StdErr = Output.StdErr.replaceAll(',,', ',');
+
 		Output.StdOut = JSON.parse(Output.StdOut);
 		Output.StdErr = JSON.parse(Output.StdErr);
 		
@@ -119,7 +128,9 @@ async function RunCommandLineJson(Exe,Command,ThrowOnNonZeroExitCode=true)
 	}
 	catch(e)
 	{
-		throw `Failed to parse JSON (${e}) from command output; ${Output}`;
+		console.error(`Json parse error stdout: ${Output.StdOut}`);
+		console.error(`Json parse error stderr: ${Output.StdErr}`);
+		throw `Failed to parse JSON (${e}) from command output; ${Output.StdOut}`;
 	}
 }
 
@@ -164,11 +175,25 @@ export class UgsClient
 	//	return a map of names->id
 	async GetBuildIds(Project,Environment)
 	{
-		const Command = `gsh build list --json`;
+		const Command = `gsh build list --json --environment-name ${Environment} --project-id ${Project}`;
 		const Output = await RunCommandLineJson( this.Exe, Command );
 		
+		let BuildMetas = Output;
+		//	output when there's one build, is just json
+		//	multiple builds gives an array
+		if ( !Array.isArray(BuildMetas) )
+			BuildMetas = [BuildMetas];
+		console.log(`builds;`,JSON.stringify(Output));
+		
 		const BuildMap = {};
-		BuildMap["Fake"] = 9999;
+		function WriteBuildToMap(BuildMeta)
+		{
+			const Name = BuildMeta.BuildName;
+			const BuildId = BuildMeta.BuildId;
+			BuildMap[Name] = BuildId;
+		}
+		BuildMetas.forEach( WriteBuildToMap );
+
 		return BuildMap;
 	}
 /*
