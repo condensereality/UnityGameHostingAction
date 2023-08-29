@@ -67,6 +67,34 @@ async function GetCliExe()
 	return ExePath;
 }
 
+function SanitiseBuildName(BuildName)
+{
+	//	special "make PR name nice"
+	//	`refs/pull/123/merge`.replace( new RegExp(`refs\/pull\/([0-9]*)\/`), `PullRequest-$1-`)
+	//	becomes 'PullRequest-123-merge'
+	BuildName = BuildName.replace( new RegExp(`refs\/pull\/([0-9]*)\/`), `PullRequest-$1-`);
+
+	//	build name might be a pull request or github ref
+	//	so tidy that up
+	//	refs/heads/graham/8079-UnityGameHostingAutoBuild
+	const StripPrefixes =
+	[
+		`refs/heads/`
+	];
+	function StripBuildNamePrefix(Prefix)
+	{
+		if ( BuildName.startsWith(Prefix) )
+			BuildName = BuildName.substr(Prefix.length)
+	}
+	StripPrefixes.forEach( StripBuildNamePrefix );
+	
+	//	then replace any illegal characters with -
+	//	gr: space is actually allowed too
+	const BadCharPattern = /[^A-Za-z0-9-]/g;
+	BuildName = BuildName.replace( BadCharPattern, '-' );
+	return BuildName;
+}
+
 
 
 
@@ -109,7 +137,11 @@ async function run()
 	}
 	
 	//	grab this later so user can see what builds exist before passing param
-	const BuildName = GetParam('BuildName');
+	const InputBuildName = GetParam('BuildName');
+	
+	const BuildName = SanitiseBuildName(InputBuildName);
+	if ( BuildName != InputBuildName )
+		console.warn(`Santised input build name (${InputBuildName}) to ${BuildName}`);
 	
 	//	if no existing build, create one
 	if ( !Builds.hasOwnProperty(BuildName) )
