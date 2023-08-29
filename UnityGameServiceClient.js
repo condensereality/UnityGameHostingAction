@@ -252,7 +252,8 @@ export class UgsClient
 		console.log(`Creating new build (${BuildId}) version ${RemoveOldFiles?'(Removing old files)':''} from directory ${BuildFilesDirectory} to ${Environment}...`);
   
 		const Command = `gsh build create-version ${BuildId} --directory ${BuildFilesDirectory} --json ${RemoveOldFilesParam} --environment-name ${Environment} --project-id ${Project}`;
-
+		console.log(`${this.Exe} ${Command}`);
+		
 		const Output = await RunCommandLineJson( this.Exe, Command );
 		
 		console.log(`Create-Version output;`,JSON.stringify(Output));
