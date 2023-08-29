@@ -44,11 +44,12 @@ const Params = GetParams();
 
 export function GetParam(Key)
 {
-	Key = Key.toLowerCase();
+	//	gr: lower case only applies to CLI
+	let CliKey = Key.toLowerCase();
 	
 	//	CLI args get priority
-	if ( Params.hasOwnProperty(Key) )
-		return Params[Key];
+	if ( Params.hasOwnProperty(CliKey) )
+		return Params[CliKey];
 
 	//	try github inputs
 	const InputValue = core.getInput(Key);
