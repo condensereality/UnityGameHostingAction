@@ -99,8 +99,61 @@ function SanitiseBuildName(BuildName)
 	return BuildName;
 }
 
-
-
+async function DebugListFilesInDirectory(Directory,Depth=0)
+{
+	let DirMetaOutput =
+	{
+	TotalCount: 0,
+	LargeCount: 0,
+	SizeBytes: 0,
+	LargeBytes: 0,
+	NonCount: 0,
+	};
+	
+	console.log(`DebugListFilesInDirectory(${Directory})...`);
+	const Files = await FileSystem.readdir( Directory, { withFileTypes: true } );
+	for ( let File of Files )
+	{
+		if ( File.isDirectory() )
+		{
+			console.log(File);
+			const DirMeta = await DebugListFilesInDirectory( `${Directory}/${File.name}`, Depth+1 );
+			DirMetaOutput.TotalCount += DirMeta.TotalCount;
+			DirMetaOutput.LargeCount += DirMeta.LargeCount;
+			DirMetaOutput.SizeBytes += DirMeta.SizeBytes;
+			DirMetaOutput.LargeBytes += DirMeta.LargeBytes;
+			DirMetaOutput.NonCount += DirMeta.NonCount;
+		}
+		else if ( File.isFile() )
+		{
+			DirMetaOutput.TotalCount += 1;
+			const FileMeta = await FileSystem.stat( `${Directory}/${File.name}` );
+			const SizeKb = FileMeta.size / 1024;
+			const SizeMb = FileMeta.size / 1024 / 1024;
+			if ( SizeMb > 1 )
+			{
+				console.log(`Large file! ${File.name}; ${SizeMb.toFixed(2)}mb...`);
+				DirMetaOutput.LargeBytes += FileMeta.size;
+				DirMetaOutput.LargeCount += 1;
+			}
+			console.log( File, `${SizeKb.toFixed(2)}kb` );
+			DirMetaOutput.SizeBytes += FileMeta.size;
+		}
+		else
+		{
+			DirMetaOutput.NonCount += 1;
+			console.log(`File not file, nor directory; `,File);
+		}
+	}
+	
+	if ( Depth == 0 )
+	{
+		const TotalMb = (DirMetaOutput.SizeBytes/1024/1024).toFixed(2);
+		const LargeMb = (DirMetaOutput.LargeBytes/1024/1024).toFixed(2);
+		console.log(`Total in ${Directory} Files=${DirMetaOutput.TotalCount}(${TotalMb}mb) Large=${DirMetaOutput.LargeCount}(${LargeMb}mb) Non-files: ${DirMetaOutput.NonCount}`);
+	}
+	return DirMetaOutput;
+}
 
 
 async function run() 
@@ -139,7 +192,10 @@ async function run()
 			throw `BuildFilesDirectory param (=${BuildFilesDirectory}) is [currently] expecting an absolute path; prefix with $GITHUB_WORKSPACE?`;
 		}
 	}
+	//	gr: create-version was erroring, so listing files
+	await DebugListFilesInDirectory( BuildFilesDirectory );
 	
+
 	//	grab this later so user can see what builds exist before passing param
 	const InputBuildName = GetParam('BuildName');
 	
