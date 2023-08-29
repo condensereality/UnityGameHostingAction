@@ -45,12 +45,26 @@ async function GetCliExe()
 		ExePath = __dirname + ExePath;
 	}
 
-	if ( FileSystem.existsSync(ExePath) )
-		return ExePath;
+	//	cant find file
+	if ( !FileSystem.existsSync(ExePath) )
+	{
+		const CurrentWorkingDir = Process.cwd();
+		throw `CLI exe ${ExePath} doesnt exist (cwd=${CurrentWorkingDir} __dirname=${__dirname}), todo: fetch gsh exe, unzip and return`;
+	}
 	
+	//	make exe executable
+	try
+	{
+		//	X_OK just sets x on user
+		FileSystem.chmodSync( ExePath, FileSystem.constants.S_IXUSR | FileSystem.constants.S_IRUSR );
+		//FileSystem.chmodSync( ExePath, 0o777 );
+	}
+	catch(e)
+	{
+		throw `Failed to set ${ExePath} as executable; ${e}`;
+	}
 	
-	const CurrentWorkingDir = Process.cwd();
-	throw `CLI exe ${ExePath} doesnt exist (cwd=${CurrentWorkingDir} __dirname=${__dirname}), todo: fetch gsh exe, unzip and return`;
+	return ExePath;
 }
 
 
