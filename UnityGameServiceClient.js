@@ -245,8 +245,12 @@ export class UgsClient
 		if ( !FileSystem.existsSync(BuildFilesDirectory) )
 			throw `BuildFilesDirectory "${BuildFilesDirectory}" doesnt exist`;
 		
+		
 		const RemoveOldFiles = true;
 		const RemoveOldFilesParam = RemoveOldFiles ? '--remove-old-files' : '';
+
+		console.log(`Creating new build (${BuildId}) version ${RemoveOldFiles?'(Removing old files)':''} from directory ${BuildFilesDirectory} to ${Environment}...`);
+  
 		const Command = `gsh build create-version ${BuildId} --directory ${BuildFilesDirectory} --json ${RemoveOldFilesParam} --environment-name ${Environment} --project-id ${Project}`;
 
 		const Output = await RunCommandLineJson( this.Exe, Command );
