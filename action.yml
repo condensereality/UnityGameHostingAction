@@ -21,8 +21,7 @@ inputs:
     required: true
     type: string
     description: "Ugs Environment name that the build will reside in"
-    
-secrets:
+  #secrets: # gr: these should be secrets, but... can I use them here?? they get passed in via with: still...
   Key:
     required: true
     type: string
