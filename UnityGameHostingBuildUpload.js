@@ -2,7 +2,7 @@ import * as core from "@actions/core"
 import * as github from "@actions/github"
 import * as artifact from "@actions/artifact"
 import * as os from "os"
-import * as FileSystem from "fs"
+import * as FileSystem from "fs/promises"
 import * as Path from "path"
 import * as Process from "process"
 import * as Url from "url"
@@ -46,17 +46,21 @@ async function GetCliExe()
 	}
 
 	//	cant find file
-	if ( !FileSystem.existsSync(ExePath) )
+	try
+	{
+		await FileSystem.access( ExePath, FileSystem.constants.R_OK );
+	}
+	catch(e)
 	{
 		const CurrentWorkingDir = Process.cwd();
-		throw `CLI exe ${ExePath} doesnt exist (cwd=${CurrentWorkingDir} __dirname=${__dirname}), todo: fetch gsh exe, unzip and return`;
+		throw `CLI exe ${ExePath} doesnt exist(${e}) (cwd=${CurrentWorkingDir} __dirname=${__dirname}), todo: fetch gsh exe, unzip and return`;
 	}
 	
 	//	make exe executable
 	try
 	{
 		//	X_OK just sets x on user
-		FileSystem.chmodSync( ExePath, FileSystem.constants.S_IXUSR | FileSystem.constants.S_IRUSR );
+		await FileSystem.chmod( ExePath, FileSystem.constants.S_IXUSR | FileSystem.constants.S_IRUSR );
 		//FileSystem.chmodSync( ExePath, 0o777 );
 	}
 	catch(e)
