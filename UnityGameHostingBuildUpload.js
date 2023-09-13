@@ -83,7 +83,8 @@ function SanitiseBuildName(BuildName)
 	//	refs/heads/graham/8079-UnityGameHostingAutoBuild
 	const StripPrefixes =
 	[
-		`refs/heads/`
+		`refs/heads/`,
+		`refs/tags/`
 	];
 	function StripBuildNamePrefix(Prefix)
 	{
