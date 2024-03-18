@@ -178,24 +178,38 @@ async function run()
 	const Builds = await Client.GetBuildIds( Project, Environment );
 	console.log(`Found builds; `,Builds);
 
-	//	check build input before messing with builds
-	//	gr: whilst we need to mess with paths for cliexe (see CliExeDirectory)
-	//		require the user to pass a full path to build files (ie. prefixed with GITHUB_WORKSPACE/)
-	//const RequireAbsoluteBuildFilesDir = true;
-	//	gr: exe now finds it's own proper full path, so this can be in working directory again
-	const RequireAbsoluteBuildFilesDir = false;
-	
-	const BuildFilesDirectory = GetParam('BuildFilesDirectory');
-	if ( RequireAbsoluteBuildFilesDir )
+	let BuildContainerTag = null;
+	let BuildFilesDirectory = null;
+
+	if ( HasParam('BuildFilesDirectory') )
 	{
-		if ( !Path.isAbsolute(BuildFilesDirectory) )
+		//	check build input before messing with builds
+		//	gr: whilst we need to mess with paths for cliexe (see CliExeDirectory)
+		//		require the user to pass a full path to build files (ie. prefixed with GITHUB_WORKSPACE/)
+		//const RequireAbsoluteBuildFilesDir = true;
+		//	gr: exe now finds it's own proper full path, so this can be in working directory again
+		const RequireAbsoluteBuildFilesDir = false;
+		
+		BuildFilesDirectory = GetParam('BuildFilesDirectory');
+		if ( RequireAbsoluteBuildFilesDir )
 		{
-			throw `BuildFilesDirectory param (=${BuildFilesDirectory}) is [currently] expecting an absolute path; prefix with $GITHUB_WORKSPACE?`;
+			if ( !Path.isAbsolute(BuildFilesDirectory) )
+			{
+				throw `BuildFilesDirectory param (=${BuildFilesDirectory}) is [currently] expecting an absolute path; prefix with $GITHUB_WORKSPACE?`;
+			}
 		}
+		//	gr: create-version was erroring, so listing files
+		await DebugListFilesInDirectory( BuildFilesDirectory );
+		
 	}
-	//	gr: create-version was erroring, so listing files
-	await DebugListFilesInDirectory( BuildFilesDirectory );
-	
+	else if ( HasParam('BuildContainerTag') )
+	{
+		BuildContainerTag = GetParam('BuildContainerTag');
+	}
+	else
+	{
+		throw `Neither BuildFilesDirectory nor BuildContainerTag. At least one is requried`;
+	}
 
 	//	grab this later so user can see what builds exist before passing param
 	const InputBuildName = GetParam('BuildName');
@@ -207,13 +221,18 @@ async function run()
 	//	if no existing build, create one
 	if ( !Builds.hasOwnProperty(BuildName) )
 	{
-		const BuildOsFamily = GetParam('BuildOsFamily')
-		await Client.CreateBuild( BuildName, BuildOsFamily, Project, Environment );
+		const BuildOsFamily = GetParam('BuildOsFamily');
+		const BuildFromFiles = BuildFilesDirectory!=null;
+		await Client.CreateBuild( BuildName, BuildOsFamily, Project, Environment, BuildFromFiles );
 	}
 	
 	const BuildId = await Client.GetBuildId( BuildName, Project, Environment );
 
-	await Client.UploadNewBuildVersion( BuildId, BuildFilesDirectory, Project, Environment );
+	if ( BuildFilesDirectory )
+		await Client.UploadNewBuildVersionFromFiles( BuildId, BuildFilesDirectory, Project, Environment );
+	
+	if ( BuildContainerTag )
+		await Client.UploadNewBuildVersionFromContainer( BuildId, BuildContainerTag, Project, Environment );
 
 	//	need to output success or anything?
 	//	maybe would be nice to get the CLI tools output displayed

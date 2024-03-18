@@ -197,16 +197,18 @@ export class UgsClient
 		return BuildMap;
 	}
 	
-	async CreateBuild(BuildName,BuildOsFamily,Project,Environment)
+	async CreateBuild(BuildName,BuildOsFamily,Project,Environment,FromFiles)
 	{
 		if ( BuildName == "" )
 			throw `CreateBuild(${BuildName},${BuildOsFamily},${Project},${Environment}) missing build name`;
 		if ( BuildOsFamily == "" )
 			throw `CreateBuild(${BuildName},${BuildOsFamily},${Project},${Environment}) missing build os family (Expecting LINUX)`;
+		if ( FromFiles === undefined )
+			throw `CreateBuild() missing FromFiles argument (true=upload files, false=docker container)`;
+			
 		
-		const BuildType = `FILEUPLOAD`;
+		const BuildType = FromFiles ? `FILEUPLOAD` : `CONTAINER`;
 		
-		//${{ env.exe }} gsh build create --name ${{ env.name }} --os-family ${{ env.osfamily }} --type ${{ env.type }} --environment-name ${{ env.environment }} --project-id ${{ env.project }}
 		const Command = `gsh build create --json --name ${BuildName} --os-family ${BuildOsFamily} --type ${BuildType} --environment-name ${Environment} --project-id ${Project}`;
 		const Output = await RunCommandLineJson( this.Exe, Command );
 		
@@ -240,7 +242,7 @@ export class UgsClient
 		return Builds[BuildName];
 	}
 	
-	async UploadNewBuildVersion(BuildId,BuildFilesDirectory,Project,Environment)
+	async UploadNewBuildVersionFromFiles(BuildId,BuildFilesDirectory,Project,Environment)
 	{
 		if ( !FileSystem.existsSync(BuildFilesDirectory) )
 			throw `BuildFilesDirectory "${BuildFilesDirectory}" doesnt exist`;
@@ -249,7 +251,7 @@ export class UgsClient
 		const RemoveOldFiles = true;
 		const RemoveOldFilesParam = RemoveOldFiles ? '--remove-old-files' : '';
 
-		console.log(`Creating new build (${BuildId}) version ${RemoveOldFiles?'(Removing old files)':''} from directory ${BuildFilesDirectory} to ${Environment}...`);
+		console.log(`Creating new build from files (${BuildId}) version ${RemoveOldFiles?'(Removing old files)':''} from directory ${BuildFilesDirectory} to ${Environment}...`);
   
 		const Command = `gsh build create-version ${BuildId} --directory ${BuildFilesDirectory} --json ${RemoveOldFilesParam} --environment-name ${Environment} --project-id ${Project}`;
 		console.log(`${this.Exe} ${Command}`);
@@ -259,16 +261,17 @@ export class UgsClient
 		console.log(`Create-Version output;`,JSON.stringify(Output));
 	}
 	
-/*
-	const OutputMeta
-		  "${{ secrets.UnityGameServerSecret }}" | ${{ env.exe }} login --service-key-id ${{ secrets.UnityGameServerKeyId }} --secret-key-stdin
-		  echo "Listing Existing builds..."
-		  ${{ env.exe }} gsh build list --json
-		  echo "Creating build if not existing..."
-		  ${{ env.exe }} gsh build create --name ${{ env.name }} --os-family ${{ env.osfamily }} --type ${{ env.type }} --environment-name ${{ env.environment }} --project-id ${{ env.project }}
-		  BUILD ID
-		  ${{ env.exe }} gsh build create-version BUILD ID --directory ${{ env.artifactpath }} --environment-name ${{ env.environment }} --project-id ${{ env.project }}
-*/
+	async UploadNewBuildVersionFromContainer(BuildId,BuildContainerTag,Project,Environment)
+	{
+		console.log(`Creating new build from container (${BuildId}) version from tag ${BuildContainerTag} to ${Environment}...`);
+  
+		const Command = `gsh build create-version ${BuildId} --tag ${BuildContainerTag} --json --environment-name ${Environment} --project-id ${Project}`;
+		console.log(`${this.Exe} ${Command}`);
+		
+		const Output = await RunCommandLineJson( this.Exe, Command );
+		
+		console.log(`Create-Version output;`,JSON.stringify(Output));
+	}
 	
 }
 
