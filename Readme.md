@@ -13,6 +13,8 @@ The UnityServicesApi uses `Service Accounts` for auth, so you need to create a s
 	- `Game Server Hosting API Editor`
 	- `Game Server Hosting API Manager`
 	- `Game Server Hosting API Viewer`
+	- For upload docker images, you also need the
+	- `Game Server Hosting Registry Editor`
 
 
 Development
