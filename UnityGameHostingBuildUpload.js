@@ -10,7 +10,7 @@ import * as Url from "url"
 //	no __dirname or __filename in module-js node
 const __dirname = Url.fileURLToPath(new URL('.', import.meta.url));
 
-import { GetParam } from './Params.js'
+import { GetParam, HasParam } from './Params.js'
 import { UgsClient } from './UnityGameServiceClient.js'
 
 

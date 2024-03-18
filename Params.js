@@ -41,6 +41,18 @@ function GetParams()
 
 const Params = GetParams();
 
+export function HasParam(Key)
+{
+	try
+	{
+		GetParam(Key);
+		return true;
+	}
+	catch
+	{
+	}
+	return false;
+}
 
 export function GetParam(Key)
 {
