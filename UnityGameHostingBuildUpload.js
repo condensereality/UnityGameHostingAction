@@ -161,7 +161,7 @@ async function run()
 {
 	//	grab required params
 	const Project = GetParam('Project');
-	const Environment = GetParam('Environment');
+	const Environment = GetParam('Environment').toLowerCase();	//	always lowercase in UGH
 	const Key = GetParam('Key');
 	const Secret = GetParam('Secret');
 
