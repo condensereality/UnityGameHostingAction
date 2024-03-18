@@ -5,8 +5,17 @@ inputs:
     type: string
     description: "Name of the new build. Input will be sanitised"
   BuildFilesDirectory:
-    required: true
+    required: false
     type: string
+    description: "FileMode: Directory of files to upload for build, if not using container tags"
+  LocalBuildContainerTag:
+    required: false
+    type: string
+    description: "ContainerMode: Local-docker name:tag of image to upload"
+  RemoteBuildVersion:
+    required: false
+    type: string
+    description: "ContainerMode: Version name for build. Formerly auto-incremented. Now any unique string (eg. v1 or git-sha)"
   BuildOsFamily:
     required: true
     type: choice
@@ -21,6 +30,11 @@ inputs:
     required: true
     type: string
     description: "Ugs Environment name that the build will reside in"
+  EnvironmentId:
+    required: false
+    type: string
+    description: "ContainerMode: To upload a container, need to supply the Environment Uuid (not name!) that goes with the name"
+
   #secrets: # gr: these should be secrets, but... can I use them here?? they get passed in via with: still...
   Key:
     required: true

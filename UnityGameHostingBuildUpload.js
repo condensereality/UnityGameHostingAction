@@ -178,7 +178,7 @@ async function run()
 	const Builds = await Client.GetBuildIds( Project, Environment );
 	console.log(`Found builds; `,Builds);
 
-	let BuildContainerTag = null;
+	let LocalBuildContainerTag = null;
 	let BuildFilesDirectory = null;
 
 	if ( HasParam('BuildFilesDirectory') )
@@ -202,13 +202,13 @@ async function run()
 		await DebugListFilesInDirectory( BuildFilesDirectory );
 		
 	}
-	else if ( HasParam('BuildContainerTag') )
+	else if ( HasParam('LocalBuildContainerTag') )
 	{
-		BuildContainerTag = GetParam('BuildContainerTag');
+		LocalBuildContainerTag = GetParam('LocalBuildContainerTag');
 	}
 	else
 	{
-		throw `Neither BuildFilesDirectory nor BuildContainerTag. At least one is requried`;
+		throw `Neither BuildFilesDirectory nor LocalBuildContainerTag. At least one is requried`;
 	}
 
 	//	grab this later so user can see what builds exist before passing param
@@ -231,8 +231,16 @@ async function run()
 	if ( BuildFilesDirectory )
 		await Client.UploadNewBuildVersionFromFiles( BuildId, BuildFilesDirectory, Project, Environment );
 	
-	if ( BuildContainerTag )
-		await Client.UploadNewBuildVersionFromContainer( BuildId, BuildContainerTag, Project, Environment );
+	if ( LocalBuildContainerTag )
+	{
+		//	gr; this is a uuid, NOT the name "production"
+		const EnvironmentId = GetParam('EnvironmentId');
+		await Client.LoginToDockerRegistry( Key, Secret );
+		//	todo: https://github.com/condensereality/UnityGameHostingAction/issues/1
+		//		require this on file builds too
+		const RemoteBuildVersion = GetParam('RemoteBuildVersion');
+		await Client.UploadNewBuildVersionFromContainer( BuildId, LocalBuildContainerTag, Project, Environment, EnvironmentId, RemoteBuildVersion );
+	}
 
 	//	need to output success or anything?
 	//	maybe would be nice to get the CLI tools output displayed

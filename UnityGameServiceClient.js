@@ -19,6 +19,14 @@ function CreatePromise()
 }
 
 
+export async function Yield(Milliseconds)
+{
+	const Promise = CreatePromise();
+	setTimeout( Promise.Resolve, Milliseconds );
+	return Promise;
+}
+
+
 
 //	returns
 //	{ .ExitCode=0, .StdOut=[], .StdErr=[] }
@@ -144,6 +152,11 @@ export class UgsClient
 		this.Exe = ExePath;
 	}
 	
+	get DockerExe()
+	{
+		return `docker`;
+	}
+	
 	async GetVersion()
 	{
 		const VersionOutput = await RunCommandLine( this.Exe,`--version`);
@@ -206,7 +219,8 @@ export class UgsClient
 		if ( FromFiles === undefined )
 			throw `CreateBuild() missing FromFiles argument (true=upload files, false=docker container)`;
 			
-		
+		console.log(`Creating new build named ${BuildName} in ${Environment}... FromFiles=${FromFiles}`);
+
 		const BuildType = FromFiles ? `FILEUPLOAD` : `CONTAINER`;
 		
 		const Command = `gsh build create --json --name ${BuildName} --os-family ${BuildOsFamily} --type ${BuildType} --environment-name ${Environment} --project-id ${Project}`;
@@ -251,7 +265,7 @@ export class UgsClient
 		const RemoveOldFiles = true;
 		const RemoveOldFilesParam = RemoveOldFiles ? '--remove-old-files' : '';
 
-		console.log(`Creating new build from files (${BuildId}) version ${RemoveOldFiles?'(Removing old files)':''} from directory ${BuildFilesDirectory} to ${Environment}...`);
+		console.log(`Creating new build-version from files (${BuildId}) version ${RemoveOldFiles?'(Removing old files)':''} from directory ${BuildFilesDirectory} to ${Environment}...`);
   
 		const Command = `gsh build create-version ${BuildId} --directory ${BuildFilesDirectory} --json ${RemoveOldFilesParam} --environment-name ${Environment} --project-id ${Project}`;
 		console.log(`${this.Exe} ${Command}`);
@@ -260,17 +274,51 @@ export class UgsClient
 		
 		console.log(`Create-Version output;`,JSON.stringify(Output));
 	}
-	
-	async UploadNewBuildVersionFromContainer(BuildId,BuildContainerTag,Project,Environment)
+
+	async GetBuildMeta(BuildId,Project,Environment)
 	{
-		console.log(`Creating new build from container (${BuildId}) version from tag ${BuildContainerTag} to ${Environment}...`);
-  
-		const Command = `gsh build create-version ${BuildId} --tag ${BuildContainerTag} --json --environment-name ${Environment} --project-id ${Project}`;
+		const Command = `gsh build get ${BuildId} --json --environment-name ${Environment} --project-id ${Project}`;
 		console.log(`${this.Exe} ${Command}`);
-		
 		const Output = await RunCommandLineJson( this.Exe, Command );
+			
+		console.log(`Get-build-meta output;`,JSON.stringify(Output));
+		return Output;
+	}
+	
+	async LoginToDockerRegistry(Username,Password)
+	{
+		//	login docker to the registry
+		//	gr: can we make this ephemeral!?
+		const LoginCommandLine = `login registry.multiplay.com --username ${Username} --password ${Password}`;
+		//	contains password!
+		//console.log(`LoginCommandLine=${LoginCommandLine}`);
+		const LoginOutput = await RunCommandLine( this.DockerExe, LoginCommandLine );
+		console.log(`Docker login output; ${LoginOutput}`);
+	}
+	
+	async UploadNewBuildVersionFromContainer(BuildId,LocalBuildContainerTag,Project,Environment,EnvironmentId,RemoteBuildVersion)
+	{
+		if ( !RemoteBuildVersion )
+			throw `Missing required RemoteBuildVersion(${RemoteBuildVersion})`;
+
+		const BuildMeta = await this.GetBuildMeta(BuildId,Project,Environment);
 		
-		console.log(`Create-Version output;`,JSON.stringify(Output));
+		//	push the local docker tag
+		const TagCommandLine = `tag ${LocalBuildContainerTag} registry.multiplay.com/${Project}/${EnvironmentId}/${BuildId}:${RemoteBuildVersion}`;
+		console.log(`TagCommandLine=${TagCommandLine}`);
+		const TagOutput = await RunCommandLine( this.DockerExe, TagCommandLine );
+
+		const PushCommandLine = `push registry.multiplay.com/${Project}/${EnvironmentId}/${BuildId}:${RemoteBuildVersion}`;
+		console.log(`PushCommandLine=${PushCommandLine}`);
+		const PushOutput = await RunCommandLine( this.DockerExe, PushCommandLine );
+
+
+		console.log(`Creating new build-version from container (${BuildId}) version from tag ${RemoteBuildVersion} to ${Environment}...`);
+		const MakeVersionCommand = `gsh build create-version ${BuildId} --tag ${RemoteBuildVersion} --json --environment-name ${Environment} --project-id ${Project}`;
+		console.log(`${this.Exe} ${MakeVersionCommand}`);
+		const MakeVersionOutput = await RunCommandLineJson( this.Exe, MakeVersionCommand );
+		
+		console.log(`Create-Version output;`,JSON.stringify(MakeVersionOutput));
 	}
 	
 }

@@ -28,14 +28,16 @@ These can be passed via cli when testing with `--paramname=XXX`.
 They are all converted to lowercase, so case insensitive.
 - `BuildName=name` Name of your build. eg. `github.ref`. The action will sanitise the name (restricted to [A-Za-z0-9 -])
 - `Project=XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX` your UnityServices project id
-- `Environment=name` 
+- `Environment=name` production, staging etc
+- `EnvironmentId=XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX` required only for docker tag & upload, this is NOT the environment name, but a UUID, it can be found in your UnityServices project's environment page
 - `Key` Your UnityServices ServiceAccount KeyID
 - `Secret` The secret to go with the key.
 - `BuildOsFamily=LINUX` Os of the server (currently `WINDOWS` or `LINUX`)
 - Specify source of the image, either a directory of files, or a container image
 	- `BuildFilesDirectory=/files` Path to the file-contents of your build (probably from artifact files)
-	- `BuildContainerTag=name:tag` 
-	
+	- `LocalBuildContainerTag=name:tag` this is the `name:tag` of your LOCAL docker's image, which gets tagged then pushed to the unity registry
+- `RemoteBuildVersion=v1` "Version" name on the build. This can be any string now (not auto-incremented).  https://github.com/condensereality/UnityGameHostingAction/issues/1
+	- Top Tip! use git sha!
 
 Local Testing
 -----------------
