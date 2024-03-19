@@ -45,3 +45,15 @@ Local Testing
 - `node ./UnityGameHostingBuildUpload.js`
 - `node ./UnityGameHostingBuildUpload.js --BuildOsFamily=Linux --buildname=MyTestBuild --buildfilesdirectory=/yourfiles --project=aaaa-bbbb-ccc-dddd --environment=env_eg_production --key=xxx --secret=fedcba9876543210`
 
+Troubleshooting
+==================
+Uploading container, where a build used to be from files, will result in this error from the CLI exe
+```
+Error: Process exit code 2; stdout=System.ArgumentNullException: Value cannot be null. (Parameter 'path')
+  at IEnumerable<string> System.IO.Directory.InternalEnumeratePaths(string path,
+     string searchPattern, SearchTarget searchTarget, EnumerationOptions options
+     )                                                                          
+  at string[[]] System.IO.Directory.GetFiles(string path, string searchPattern, 
+     EnumerationOptions enumerationOptions)                                     
+  at string[[]] System.IO.Directory.GetFiles(string path, string searchPattern,
+```
